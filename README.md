@@ -68,6 +68,11 @@ node ~/.minimax/.builtin-skills/skill-creator/scripts/lint-skill.js \
 All 8 lint checks should pass (SKILL.md, frontmatter, kebab-case name, trigger hint,
 no forbidden keys, line cap, no forbidden files, references resolve).
 
+> Note: the linter treats the directory it points at as the **installed** skill
+> (it checks that `name` matches the directory and that no `README.md` /
+> `.gitignore` leaks in). Run it against `~/.minimax/skills/omniseek/`, not against
+> this project directory.
+
 **Browse sources:**
 
 ```bash
