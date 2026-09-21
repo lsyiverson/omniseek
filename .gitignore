@@ -1,0 +1,126 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Tooling caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.cache
+.pyre/
+
+# ===== macOS / OS junk =====
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ===== Editors / IDEs =====
+# Vim
+*.sw[a-z]
+*.un~
+Session.vim
+.viminfo
+# Emacs
+*~
+\#*\#
+.\#*
+# JetBrains / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+# VS Code
+.vscode/
+.settings/
+# Sublime / TextMate
+*.sublime-project
+*.sublime-workspace
+.tmtags
+.tags
+
+# ===== Logs / runtime artifacts =====
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+.timing
+.noseids
+.node_repl_history
+
+# ===== Local secrets / env =====
+.env
+.env.*
+!.env.example
+secrets.*
+*.pem
+*.key
+.venv/
+venv/
+
+# ===== Skill runtime artifacts =====
+# Walled-tier Chrome profiles contain cookies + login state — never commit
+chrome-*/
+.chrome-profile/
+.cdp/
+.wall-profiles/
+
+# Local probe / scratch files
+probe*.py
+inspect*.py
+*.dump.html
+smzdm_dump*.html
+
+# OS-trash leftovers from the macOS desktop / downloads
+.Trash-*/
+
+# ===== Node (lint / docs tooling) =====
+node_modules/
+.npm
+.yarn/
+.pnp.*
+
+# ===== Misc =====
+*.bak
+*.swp
+*.swo
+*.tmp
+*.orig
+*.rej
+.DS_Store?
