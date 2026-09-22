@@ -162,10 +162,11 @@ def fetch_feed(url: str = FEED_URL) -> list[dict]:
     if _looks_like_captcha(raw):
         print(
             "smzdm.gated: RSS endpoint is serving a Tencent captcha interstitial. "
-            "smzdm.com has started gating all unauthenticated traffic (verified late 2025 / 2026). "
-            "Retry from a residential IP, or wait — the block usually clears within a few hours. "
-            "If you need persistent access, route the request through your logged-in Chrome via CDP "
-            "(see references/walled.md).",
+            "smzdm.com fingerprint-probes every plain HTTP / web_fetch request (verified "
+            "late 2025 / 2026) — this is NOT an auth wall, no smzdm login is required. "
+            "Don't keep retrying web_fetch/urllib for smzdm URLs; go straight to a real "
+            "browser instead: scripts/walled/smzdm_read.py <post-url> (CDP port 9226, "
+            "see references/walled.md — no login step needed for smzdm).",
             file=sys.stderr,
         )
         return []

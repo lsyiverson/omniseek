@@ -7,6 +7,12 @@ A real Chrome passes the probe and renders the full page server-side. No smzdm
 login is required to *read* posts, but you DO need a persistent Chrome on a
 dedicated CDP port. We use **9226** (the next free port after 9225 douyin).
 
+IMPORTANT for callers: ``web_fetch`` / plain HTTP against ``post.smzdm.com``
+or ``www.smzdm.com`` will reliably hit the captcha interstitial — don't waste
+a retry on it. Go straight to this script (or drive a local browser tool) the
+first time you see a smzdm URL; no login step is required first, just a
+running Chrome on port 9226 (``scripts/launch_browser.sh 9226``).
+
 This complements ``smzdm.py`` (the RSS aggregator) and ``walled/xiaohongshu_read.py``
 in the same walled-script pattern: launch a Chrome, the script drives it via CDP,
 read-only, never touches your login cookies.

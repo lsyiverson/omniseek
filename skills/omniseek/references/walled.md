@@ -148,6 +148,16 @@ whatever challenge). Leave the browser **running**. Because the profile is
 persistent, you only do this again when the platform expires your session
 (typically rare).
 
+> **Exception — smzdm (port 9226): no login needed.** smzdm's gate is a
+> client-side fingerprint/JS probe + Tencent captcha, not an auth wall. A
+> plain `curl`/`web_fetch` request gets served the captcha interstitial;
+> a real Chrome passes the probe and renders the page straight away —
+> with or without a logged-in session. So for `walled/smzdm_read.py` you
+> can skip this step entirely: just `scripts/launch_browser.sh 9226` and
+> go straight to step 5. If you ever see `web_fetch` fail on a
+> `post.smzdm.com` URL, don't keep retrying `web_fetch` — that domain
+> always needs the real-browser path.
+
 You can press `Ctrl-C` in the terminal that ran `launch_browser.sh` — the
 browser keeps running. (The `exec` in the script replaces the shell, so
 Ctrl-C in the terminal sends SIGINT to the browser; on most setups the

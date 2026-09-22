@@ -78,7 +78,7 @@ for thread-level matches.
 | Source | Endpoint | Qualifiers | Rate |
 |---|---|---|---|
 | `rss` | (your URLs) | positional URLs; `--file list.txt` | per-feed politeness |
-| `smzdm` | `post.smzdm.com/feed` | `--keyword` `--category` `--limit` | polite (RSS); may be captcha-throttled from datacenter IPs |
+| `smzdm` | `post.smzdm.com/feed` | `--keyword` `--category` `--limit` | commonly captcha-gated (fingerprint probe, not login); if `web_fetch`/RSS returns captcha, skip straight to `walled/smzdm_read.py` (port 9226) — no smzdm login needed |
 | `wayback` | `web.archive.org/cdx/search/cdx` | positional URL; `--from` `--to` | unbounded |
 
 `rss.py` is a generic aggregator — you supply feed URLs. Useful for lab

@@ -88,7 +88,13 @@ Read the merged results. Three signals tell you whether to keep going:
   `semantic_scholar.py paper:<DOI>`
 - **Depth gap** — you have a hit list but need the actual content. → Fetch
   the canonical URL via `web_fetch` (browser for JS-walled pages) and read
-  the full text
+  the full text. **Known anti-scraping exception: smzdm.com /
+  post.smzdm.com.** `web_fetch`/plain HTTP gets served a Tencent captcha
+  interstitial on essentially every request (fingerprint probe, not a login
+  wall). Don't bother retrying `web_fetch` for smzdm URLs — go straight to
+  a real browser: `scripts/walled/smzdm_read.py <url>` (CDP, port 9226) or
+  drive a local browser tool directly. **No smzdm account/login is
+  required** — a real Chrome fingerprint alone passes the probe.
 
 ### 5. Cite — never lose provenance
 
@@ -137,6 +143,12 @@ script's docstring for the shape.
 - **Malformed upstream response** — the script prints `[]` and a `parse_error`
   note. The next run after the upstream fixes itself will recover; no retry
   needed.
+- **Anti-scraping captcha (e.g. smzdm.com pages)** — if `web_fetch` /
+  plain HTTP returns a Tencent-captcha interstitial (`TCaptcha`,
+  `captcha.show`) instead of content, don't retry `web_fetch`. Skip
+  straight to a real browser: `scripts/walled/smzdm_read.py <url>` (CDP
+  port 9226) or a local browser tool. This is a fingerprint probe, not an
+  auth wall — no login/account is needed to read the page.
 
 ## Examples
 
