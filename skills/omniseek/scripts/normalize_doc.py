@@ -121,6 +121,9 @@ _SOURCE_PRIORITY = {
     # bumped above the comment-only sources but below primary research papers.
     "zhihu": 0.75,
     "xiaohongshu": 0.55,
+    # NGA hits are forum threads: the thread body (read mode) carries the value,
+    # the search row is just a title. Sits between reddit and zhihu.
+    "nga": 0.60,
 }
 
 

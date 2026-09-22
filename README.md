@@ -19,7 +19,7 @@ score + dedupe, then drill into the top hits.
 | `news` | rss, smzdm, wayback | smzdm posts via RSS; details to car |
 | `jobs` | mycareersfuture, remotive | — |
 | `funding` | nsf_awards, nih_reporter | — |
-| `walled` | zhihu (9222), xiaohongshu_search (9223), xiaohongshu_read (9223), smzdm_read (9226) | user-managed Chrome via CDP |
+| `walled` | zhihu (9222), nga (9222, search + read), xiaohongshu_search (9223), xiaohongshu_read (9223), smzdm_read (9226) | user-managed Chrome via CDP |
 
 See `skills/omniseek/references/catalog.md` for the full inventory with
 endpoints, qualifiers, and rate limits.
@@ -43,6 +43,7 @@ omniseek-skill/
         │   ├── <one .py per source>   ← 20 free-tier scripts
         │   └── walled/                ← login-gated scripts (use port above)
         │       ├── zhihu.py
+        │       ├── nga.py
         │       ├── xiaohongshu_search.py
         │       ├── xiaohongshu_read.py
         │       └── smzdm_read.py
@@ -116,7 +117,7 @@ python3 skills/omniseek/scripts/normalize_doc.py /tmp/sweep.json \
 
 ```bash
 # Launch a Chrome on the port your walled source expects.
-# 9222  shared (zhihu)
+# 9222  shared (zhihu, nga 玩家社区)
 # 9223  xiaohongshu (search + read)
 # 9226  smzdm (read-only — no smzdm login needed, just a real browser fingerprint)
 bash skills/omniseek/scripts/launch_browser.sh 9223 ~/.omniseek/chrome-9223 \
@@ -128,6 +129,16 @@ python3 skills/omniseek/scripts/walled_health.py
 
 # Now drive it
 python3 skills/omniseek/scripts/walled/xiaohongshu_search.py "字节跳动 面经" --limit 5
+```
+
+Same pattern for NGA — one Chrome (9222), search then read the thread body:
+
+```bash
+bash skills/omniseek/scripts/launch_browser.sh 9222 https://bbs.nga.cn
+#   ↑ log in to NGA by hand, then leave it running
+
+python3 skills/omniseek/scripts/walled/nga.py "黑神话 帧数 优化" --limit 5
+python3 skills/omniseek/scripts/walled/nga.py --read <tid> --max-posts 20
 ```
 
 See `skills/omniseek/references/walled.md` for the full trust model, port map, and troubleshooting table.
@@ -194,7 +205,7 @@ repo; `skills/omniseek/references/sources-derived.md` records the exact mapping 
 is traceable.
 
 **Upstream has 218+ sources across 32 domains. This skill ships 20 free data
-sources + 4 walled readers + 3 orchestrators.** The walled tier follows the
+sources + 5 walled readers + 3 orchestrators.** The walled tier follows the
 upstream "user-managed Chrome via CDP" pattern — we never see your password,
 the script closes only the tab it opens.
 

@@ -104,7 +104,7 @@ tells you exactly which step to run next.
 
 | Source(s) | Port | Browser profile | Why isolated |
 |-----------|------|-----------------|--------------|
-| `walled/zhihu.py` (and future CN forums: yipinsanfendi, douban_groups, …) | **9222** | `~/.omniseek/chrome-9222` | one login you reuse across these sources |
+| `walled/zhihu.py`, `walled/nga.py` (and future CN forums: yipinsanfendi, douban_groups, …) | **9222** | `~/.omniseek/chrome-9222` | one login you reuse across these sources |
 | `walled/xiaohongshu_search.py` + `walled/xiaohongshu_read.py` | **9223** | `~/.omniseek/chrome-9223` | account-rate-sensitive, isolated from the shared login |
 | (future) xiaohongshu mainland | **9224** | `~/.omniseek/chrome-9224` | second independent login if you hold one |
 | (future) douyin | **9225** | `~/.omniseek/chrome-douyin` | account-rate-sensitive, fully isolated |
@@ -120,8 +120,8 @@ The helper script detects Chrome / Chromium on macOS and Linux and
 launches it with the right flags:
 
 ```bash
-# Shared Chrome for zhihu (+ future CN forums)
-scripts/launch_browser.sh 9222
+# Shared Chrome for zhihu + NGA (+ future CN forums)
+scripts/launch_browser.sh 9222 https://bbs.nga.cn
 
 # Dedicated Chrome for xiaohongshu, pre-opened to the login page
 scripts/launch_browser.sh 9223 ~/.omniseek/chrome-9223 https://www.xiaohongshu.com
@@ -173,6 +173,19 @@ python3 scripts/walled_health.py
 # Search zhihu (port 9222)
 python3 scripts/walled/zhihu.py "PhD 申请 流程" --limit 5
 
+# Search NGA (port 9222) — needs a logged-in NGA account
+python3 scripts/walled/nga.py "黑神话 帧数 优化" --limit 5
+python3 scripts/walled/nga.py "4080 驱动" --in-post --limit 5      # full-text
+python3 scripts/walled/nga.py "装修 预算" --fid -7 --limit 5       # one board
+
+# Read a thread the search returned (tid) — body + per-floor posts
+python3 scripts/walled/nga.py --read 44321111 --max-posts 20 --max-pages 2
+# Or batch a hit list: search → tids → read
+python3 scripts/walled/nga.py "黑神话 帧数" --limit 5 \
+  | python3 -c "import json,sys; [print(d['source_id']) for d in json.load(sys.stdin)]" \
+  > /tmp/nga_tids.txt
+python3 scripts/walled/nga.py --read-file /tmp/nga_tids.txt --max-posts 15
+
 # Search xiaohongshu (port 9223) — returns URLs WITH xsec_token baked in
 python3 scripts/walled/xiaohongshu_search.py "字节跳动 面经" --limit 10
 
@@ -213,6 +226,9 @@ Probes all four ports and prints one line per port:
 | `[DEAD] port 9222` line | Chrome not launched | `scripts/launch_browser.sh 9222` |
 | `connected to port 9222, no context (login needed)` | Chrome up, no cookies — likely a fresh profile | Open the window and log in |
 | Wall script returns `[]` silently | Cookie expired, or site returned a login wall | Open Chrome, refresh zhihu.com, log in if redirected |
+| `walled/nga: login_required: …` | NGA search + most boards require a login; the shared Chrome isn't logged into NGA | Open the 9222 window, log into bbs.nga.cn by hand, retry |
+| `walled/nga: search_rate_limited: …` | NGA throttles search per account (a few per minute) | Wait, lower `--limit`, and don't loop the search |
+| `walled/nga` returns `[]` but the page rendered | NGA markup drifted | Re-run with `--dump-html /tmp/nga.html` and re-measure the selectors in `walled/nga.py` |
 | Wall script returns `[]` + captcha / 风控 | You hammered the site | Wait several hours; lower `--limit` |
 | `RuntimeError: walled source needs playwright` | Playwright Python package missing | `pip install playwright` — and follow the auto-detected hint in the error (skip `playwright install chromium` if you already have Chrome locally) |
 | `RuntimeError: cannot connect to CDP port N` | Chrome not on that port | `scripts/launch_browser.sh N` |
@@ -245,8 +261,9 @@ Probes all four ports and prints one line per port:
 - **Not a wall bypass.** The walled tier assumes you have a legitimate
   account and access to the content already. It does not help with
   credential stuffing, account farming, or bypassing rate limits.
-- **Not 14 sources out of the box.** This skill ships **two** walled
-  sources (`zhihu`, `xiaohongshu_search`). The upstream omniseek ships
+- **Not 14 sources out of the box.** This skill ships four walled
+  platforms / five scripts (`zhihu`, `nga`, `xiaohongshu_search` +
+  `xiaohongshu_read`, `smzdm_read`). The upstream omniseek ships
   14 (zhihu, yipinsanfendi, xiaohongshu, xiaohongshu_cn, douyin,
   discord_communities, youtube, wechat, feishu_jobs, bytedance_seed,
   douban_groups, zhihu_users, …). Each is ~80-800 lines of CSS-selector

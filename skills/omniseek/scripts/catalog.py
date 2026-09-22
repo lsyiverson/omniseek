@@ -74,6 +74,8 @@ CATALOG: dict[str, list[dict]] = {
          "description": "Probe the four CDP ports — is each Chrome up + logged in?"},
         {"name": "zhihu", "tier": "walled", "script": "walled/zhihu.py",
          "description": "知乎 search — REQUIRES playwright + a logged-in Chrome on port 9222 (run scripts/launch_browser.sh 9222)"},
+        {"name": "nga", "tier": "walled", "script": "walled/nga.py",
+         "description": "NGA玩家社区 (bbs.nga.cn) forum search + thread reader — port 9222; search needs a logged-in NGA account, reading most boards does too. Search mode: positional query (--fid board scope, --in-post full text). Read mode: --read TID / --read-url / --read-file"},
         {"name": "xiaohongshu", "tier": "walled", "script": "walled/xiaohongshu_search.py",
          "description": "小红书 discovery search — REQUIRES playwright + a logged-in Chrome on port 9223 (run scripts/launch_browser.sh 9223)"},
         {"name": "xiaohongshu_read", "tier": "walled", "script": "walled/xiaohongshu_read.py",

@@ -68,10 +68,21 @@ GitHub query routing:
 | `stackoverflow` | `api.stackexchange.com/2.3/search/advanced` | free-text; `--tagged pytorch cuda` | 10000/day unauth |
 | `reddit` | `arctic-shift.com/api/posts/search` | free-text; `--subreddit`; `--sort` | unbounded |
 | `bluesky` | `public.api.bsky.app/xrpc/app.bsky.feed.searchPosts` | free-text; `--since 24h` | unbounded |
+| `nga` (walled) | `bbs.nga.cn/thread.php?key=` (search) + `read.php?tid=` (thread) | free-text; `--fid` one board; `--in-post` full text; `--read` / `--read-url` / `--read-file` + `--max-posts`, `--max-pages` | search throttled per account (a few/min); needs a logged-in Chrome on port 9222 |
 
 HN pulls BOTH stories and comments per call (default `--tag all`), budget
 split 50/50. Use `--tag story` to focus on submissions or `--tag comment`
 for thread-level matches.
+
+`nga` is the one walled source in this domain: NGA玩家社区 has no public API
+and walls search + most boards behind login, so it runs through the shared
+logged-in Chrome (`references/walled.md`). Search returns thread tids; feed
+those to read mode for the actual posts:
+
+```bash
+python3 scripts/walled/nga.py "黑神话 帧数 优化" --limit 5
+python3 scripts/walled/nga.py --read 44321111 --max-posts 20
+```
 
 ## Domain: news
 
@@ -155,11 +166,12 @@ if __name__ == "__main__":
 
 | Category | Why excluded |
 |---|---|
-| Walled (xiaohongshu, zhihu, wechat, discord) | Need a logged-in browser session. The deployer must bring their own account + CDP; bundling defaults would be unsafe. |
+| Walled beyond the opt-in tier (wechat, discord, douyin, 一亩三分地, …) | Need a logged-in browser session. The deployer must bring their own account + CDP; bundling defaults would be unsafe. The tier this skill *does* ship (`zhihu`, `nga`, `xiaohongshu`, `smzdm_read`) is off by default and documented in `references/walled.md`. |
 | `arxiv` PDFs / `crossref` PDF download | Out of scope; the model reads URLs via `web_fetch`. |
 | Transcribe (ASR) | Needs `funasr` + `torch` (~2GB). Out of scope for this skill; recommend the upstream `omniseek` MCP server for ASR. |
 | 100+ walled Chinese sources (一亩三分地, v2ex, juejin, ...) | Many are now reachable via the public proxies baked into upstream; future iterations can add keyless wrappers. |
 
-If the user explicitly needs walled sources, point them at the upstream
-MCP server (`omniseek[walled]` extra). This skill is the keyless,
-zero-install, browser-free tier.
+Beyond the opt-in walled tier shipped here (`zhihu`, `nga`, `xiaohongshu`,
+`smzdm_read` — see `references/walled.md`), point users at the upstream MCP
+server (`omniseek[walled]` extra). Everything else in this skill stays the
+keyless, zero-install, browser-free tier.

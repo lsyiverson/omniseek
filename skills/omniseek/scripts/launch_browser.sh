@@ -5,7 +5,7 @@
 # Usage:
 #   scripts/launch_browser.sh <port> [profile-dir] [url]
 #
-#   port         CDP port (9222 shared | 9223 xiaohongshu | 9224 xiaohongshu-cn | 9225 douyin | 9226 smzdm_read)
+#   port         CDP port (9222 shared: zhihu/nga | 9223 xiaohongshu | 9224 xiaohongshu-cn | 9225 douyin | 9226 smzdm_read)
 #   profile-dir  persistent browser profile; default ~/.omniseek/chrome-<port>.
 #                Keep it stable so your login survives restarts.
 #   url          optional page to open, e.g. https://www.zhihu.com so you can log in directly
@@ -20,7 +20,7 @@ if [ -z "$PORT" ]; then
 usage: $0 <port> [profile-dir] [url]
 
   port         CDP port the walled source expects
-                 9222  shared (zhihu, yipinsanfendi, etc.)
+                 9222  shared (zhihu, nga, yipinsanfendi, etc.)
                  9223  xiaohongshu (international)
                  9224  xiaohongshu (mainland)
                  9225  douyin

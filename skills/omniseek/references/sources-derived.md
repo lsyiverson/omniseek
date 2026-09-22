@@ -1,10 +1,12 @@
 # Source Provenance — how each script maps back to upstream `omniseek`
 
-This skill distills 24 source adapters from the upstream
-[`Battam1111/omniseek`](https://github.com/Battam1111/omniseek) (Apache-2.0).
-Each script in `scripts/` corresponds to one source module in the upstream
-repo. The mapping below records the upstream file each script is derived
-from, so anyone porting a fix or new feature knows where to look.
+This skill distills the upstream
+[`Battam1111/omniseek`](https://github.com/Battam1111/omniseek) (Apache-2.0)
+adapters into standalone CLIs. Each keyless script in `scripts/` corresponds
+to one source module in the upstream repo; the mapping below records the
+upstream file it is derived from, so anyone porting a fix or new feature
+knows where to look. The walled tier and a few sources upstream omits are
+built fresh in this repo (see the second table).
 
 ## Source file → script mapping
 
@@ -34,13 +36,25 @@ from, so anyone porting a fix or new feature knows where to look.
 | `scripts/normalize_doc.py` | `src/omniseek/core/normalize.py` (upstream) | (orchestrator) | Same `Document` envelope + dedup-by-URL pattern |
 | `scripts/multi_search.py` | (no upstream equivalent) | (orchestrator) | New — replaces the upstream MCP server fan-out with a shell fan-out |
 
+## Walled tier and built-fresh sources
+
+These are not line-for-line ports, so no upstream file path is claimed. They
+follow the upstream "user-managed Chrome via CDP" pattern (see
+`references/walled.md`) and were measured against the live sites.
+
+| This skill's script | Upstream | Domain | Notes |
+|---|---|---|---|
+| `scripts/walled/zhihu.py` | (pattern only) | community | CDP attach to port 9222; search-result selectors re-measured on the live site |
+| `scripts/walled/nga.py` | (none) | community | Built fresh — upstream has no NGA adapter. NGA玩家社区 search (`thread.php?key=`) + thread reader (`read.php?tid=`) over the shared 9222 Chrome. Layered selectors (`t_tt_<tid>` → `read.php?tid=` scan; `postcontent<pid>` → `.postcontent`) plus `--dump-html` so markup drift is recoverable |
+| `scripts/walled/xiaohongshu_search.py` + `xiaohongshu_read.py` | (pattern only) | community | Port 9223; search must run before read (URLs need `xsec_token`) |
+| `scripts/walled/smzdm_read.py` | (none) | news | Port 9226; real-Chrome fingerprint probe, no login required |
+
 ## Upstream sources NOT yet distilled
 
 The upstream ships 218+ sources across 32 domains. This skill ships 20
-keyless data sources plus 4 walled readers (last delta: `xiaohongshu_read`,
-the note-detail body + comment extractor that pairs with the existing
-`xiaohongshu_search`). The major categories NOT yet
-covered:
+keyless data sources plus 5 walled scripts across 4 platforms (last delta:
+`walled/nga.py`, the NGA search + thread reader). The major categories NOT
+yet covered:
 
 | Category | Reason | Future plan |
 |---|---|---|

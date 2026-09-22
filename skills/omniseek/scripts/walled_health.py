@@ -23,7 +23,7 @@ from _cdp import DEFAULT_PORTS, cdp_health  # noqa: E402
 
 
 PORT_LABELS = {
-    9222: "shared (zhihu, yipinsanfendi, etc.)",
+    9222: "shared (zhihu, nga, yipinsanfendi, etc.)",
     9223: "xiaohongshu (international)",
     9224: "xiaohongshu (mainland)",
     9225: "douyin",

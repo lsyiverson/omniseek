@@ -5,13 +5,15 @@ description: |
   funding feeds. Use this skill when the user wants breadth AND structure that
   plain web search can't give — find a paper across arxiv/OpenAlex/Semantic
   Scholar, search GitHub issues + code, pull HackerNews/Reddit/StackOverflow
-  threads, fetch job boards, query NSF/NIH grants, or aggregate RSS/blog feeds.
+  threads, search Chinese community forums (NGA 玩家社区, 知乎, 小红书), fetch
+  job boards, query NSF/NIH grants, or aggregate RSS/blog feeds.
   Triggers on phrases like "find papers on", "search code for", "HackerNews
   discussion of", "grant awards for", "GitHub issues about", "Stack Overflow
-  for", "RSS feed of", "arxiv", "openalex", "semantic scholar". Do NOT use it
-  for single web-page reading (use browser or web_fetch), local file search, or
-  pure LLM reasoning — this skill is a DATA RETRIEVAL layer, not a research
-  agent. The model still does the synthesis; this skill only fetches.
+  for", "RSS feed of", "arxiv", "openalex", "semantic scholar", "NGA 论坛",
+  "nga 攻略/评测/讨论". Do NOT use it for single web-page reading (use browser
+  or web_fetch), local file search, or pure LLM reasoning — this skill is a
+  DATA RETRIEVAL layer, not a research agent. The model still does the
+  synthesis; this skill only fetches.
 ---
 
 # OmniSeek
@@ -44,6 +46,7 @@ If the user did not specify a source, infer from intent:
 | grant, funding, award, NIH, NSF | `nsf_awards nih_reporter cordis_eu` |
 | news, blog, RSS, announcement | `rss` |
 | 中文消费, 数码评测, 购物攻略, smzdm, 值得买 | `smzdm` |
+| 中文论坛, NGA, ngabbs, 玩家社区, 游戏/二次元/数码讨论, 攻略, 装机 | `nga` (walled — port 9222, needs NGA login) |
 | historical, deleted, wayback | `wayback` |
 
 ## Procedure
@@ -95,6 +98,13 @@ Read the merged results. Three signals tell you whether to keep going:
   a real browser: `scripts/walled/smzdm_read.py <url>` (CDP, port 9226) or
   drive a local browser tool directly. **No smzdm account/login is
   required** — a real Chrome fingerprint alone passes the probe.
+  **Known login-walled exception: bbs.nga.cn (NGA玩家社区).** NGA has no
+  public API: search (`thread.php?key=`) and most board reads (`read.php?tid=`)
+  require a logged-in account, and the site throttles search hard. Don't
+  `web_fetch` NGA — route both steps through the shared logged-in Chrome on
+  port 9222: `scripts/walled/nga.py "<关键词>"` for the hit list, then
+  `scripts/walled/nga.py --read <tid>` for the thread body (search returns
+  tids, so the two compose).
 
 ### 5. Cite — never lose provenance
 
@@ -149,6 +159,11 @@ script's docstring for the shape.
   straight to a real browser: `scripts/walled/smzdm_read.py <url>` (CDP
   port 9226) or a local browser tool. This is a fingerprint probe, not an
   auth wall — no login/account is needed to read the page.
+- **Walled / login-gated source (NGA, 知乎, 小红书)** — the script exits 0
+  with `[]` plus a stderr note like `login_required` or
+  `search_rate_limited`. Tell the user which Chrome port is involved and
+  what to do (`scripts/launch_browser.sh <port>`, then log in by hand);
+  don't fall back to blind `web_fetch` retries, and don't hammer the search.
 
 ## Examples
 
@@ -184,6 +199,20 @@ Output: structured grant records with PI, institution, amount, abstract,
 start date. Use these to identify who is funding the work, not just who's
 publishing it.
 
+### Search a Chinese forum (NGA — walled)
+
+```bash
+scripts/launch_browser.sh 9222 https://bbs.nga.cn   # once; log in by hand
+python3 scripts/walled/nga.py "黑神话 帧数 优化" --limit 5
+python3 scripts/walled/nga.py --read 44321111 --max-posts 20
+```
+
+Output: search hits carry tid / title / board / author / reply count — those
+are titles only, so read the ones that matter. Read mode returns the thread
+body in `content` plus `metadata.posts` (one entry per floor with author,
+time, uid). NGA throttles search per account: keep `--limit` small and don't
+loop the search.
+
 ### Browse a source's full catalog
 
 ```bash
@@ -200,7 +229,7 @@ description + supported qualifiers.
 |---|---|---|
 | papers | arxiv, openalex, semantic_scholar, crossref, dblp, europe_pmc, zenodo | — |
 | code | github, hf_daily_papers | — |
-| community | hackernews, stackoverflow, reddit, bluesky | zhihu (port 9222), xiaohongshu (port 9223, search + read) |
+| community | hackernews, stackoverflow, reddit, bluesky | zhihu (port 9222), nga (port 9222, search + read), xiaohongshu (port 9223, search + read) |
 | news | rss (generic aggregator), smzdm (中文消费原创 RSS), wayback | — |
 | jobs | mycareersfuture, remotive, layoffs_tracker | — |
 | funding | nsf_awards, nih_reporter, cordis_eu, ukri_gtr | — |
@@ -209,6 +238,14 @@ The walled tier is **opt-in and off-by-default**. Each walled source drives a
 real Chrome you launched, with your own logged-in session, via the Chrome
 DevTools Protocol on a per-platform port. We never see your password. See
 `references/walled.md` for setup, port mapping, and the trust model.
+
+Quickest walled run (NGA — search then read):
+
+```bash
+scripts/launch_browser.sh 9222 https://bbs.nga.cn   # log in by hand once
+python3 scripts/walled/nga.py "黑神话 帧数 优化" --limit 5
+python3 scripts/walled/nga.py --read 44321111 --max-posts 20
+```
 
 See `references/catalog.md` for the full inventory with description, tier
 (`free` / `walled`), and route qualifiers for every source.
