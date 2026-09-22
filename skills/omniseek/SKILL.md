@@ -62,9 +62,11 @@ the query, a `--limit`, and source-specific flags. Output is a JSON array on
 stdout.
 
 ```bash
-python3 ~/.minimax/skills/omniseek/scripts/arxiv.py "transformer attention" --limit 5
-python3 ~/.minimax/skills/omniseek/scripts/openalex.py "transformer attention" --limit 5
-python3 ~/.minimax/skills/omniseek/scripts/semantic_scholar.py "transformer attention" --limit 5
+# `<skill-dir>` is wherever this skill is installed for your agent runtime
+# (e.g. ~/.claude/skills/, ~/.codex/skills/, or the equivalent for your agent).
+python3 <skill-dir>/omniseek/scripts/arxiv.py "transformer attention" --limit 5
+python3 <skill-dir>/omniseek/scripts/openalex.py "transformer attention" --limit 5
+python3 <skill-dir>/omniseek/scripts/semantic_scholar.py "transformer attention" --limit 5
 ```
 
 ### 3. Normalize — collapse to Document shape
