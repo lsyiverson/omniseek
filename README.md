@@ -1,6 +1,6 @@
-# omniseek — multi-source retrieval skill for Mavis
+# omniseek — multi-source retrieval skill
 
-A Mavis-compatible skill that distills [Battam1111/omniseek](https://github.com/Battam1111/omniseek)
+A skill that distills [Battam1111/omniseek](https://github.com/Battam1111/omniseek)
 (Apache-2.0) into a curated set of independent Python CLI scripts and a thin walled
 tier for login-gated platforms (Zhihu, Xiaohongshu, Smzdm-read). Designed for
 the **sweep → zoom → structure** research pattern: fan out across many sources,

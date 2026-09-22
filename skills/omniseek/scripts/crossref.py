@@ -31,8 +31,8 @@ ENDPOINT = "https://api.crossref.org/works"
 def _ua() -> str:
     mailto = os.environ.get("OMNISEEK_CONTACT_EMAIL") or ""
     if mailto:
-        return f"omniseek-mavis/0.1 (mailto:{mailto}; research retrieval)"
-    return "omniseek-mavis/0.1 (research retrieval)"
+        return f"omniseek/0.1 (mailto:{mailto}; research retrieval)"
+    return "omniseek/0.1 (research retrieval)"
 
 
 def _http_get(url: str, timeout: int = 20) -> dict | None:

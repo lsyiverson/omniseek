@@ -42,7 +42,7 @@ from email.utils import parsedate_to_datetime
 
 
 FEED_URL = "https://post.smzdm.com/feed"
-USER_AGENT = "omniseek-mavis/0.1 (research retrieval)"
+USER_AGENT = "omniseek/0.1 (research retrieval)"
 DEFAULT_LIMIT = 20
 
 

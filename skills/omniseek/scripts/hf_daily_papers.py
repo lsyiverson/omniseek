@@ -28,7 +28,7 @@ ENDPOINT = "https://huggingface.co/api/daily-papers"
 
 def _http_get(url: str, timeout: int = 20) -> list | None:
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "omniseek-mavis/0.1"})
+        req = urllib.request.Request(url, headers={"User-Agent": "omniseek/0.1"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except Exception as exc:

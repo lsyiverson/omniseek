@@ -27,7 +27,7 @@ CDX = "https://web.archive.org/cdx/search/cdx"
 
 def _http_get(url: str, timeout: int = 30) -> list | None:
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "omniseek-mavis/0.1 (research retrieval)"})
+        req = urllib.request.Request(url, headers={"User-Agent": "omniseek/0.1 (research retrieval)"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except Exception as exc:

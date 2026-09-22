@@ -27,7 +27,7 @@ ENDPOINT = "https://api.mycareersfuture.gov.sg/v2/jobs"
 def _http_get(url: str, timeout: int = 20) -> dict | None:
     try:
         req = urllib.request.Request(url, headers={
-            "User-Agent": "omniseek-mavis/0.1 (research retrieval)",
+            "User-Agent": "omniseek/0.1 (research retrieval)",
             "Accept": "application/json",
         })
         with urllib.request.urlopen(req, timeout=timeout) as resp:

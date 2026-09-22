@@ -51,7 +51,7 @@ def _pace() -> None:
 def _http_get(url: str, timeout: int = 20) -> bytes | None:
     try:
         _pace()
-        req = urllib.request.Request(url, headers={"User-Agent": "omniseek-mavis/0.1 (research retrieval)"})
+        req = urllib.request.Request(url, headers={"User-Agent": "omniseek/0.1 (research retrieval)"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read()
     except Exception as exc:

@@ -70,7 +70,7 @@ def _parse_qualifiers(query: str) -> tuple[str, dict]:
 
 def _headers() -> dict:
     key = os.environ.get("S2_API_KEY", "").strip()
-    h = {"User-Agent": "omniseek-mavis/0.1 (research retrieval)"}
+    h = {"User-Agent": "omniseek/0.1 (research retrieval)"}
     if key:
         h["x-api-key"] = key
     return h

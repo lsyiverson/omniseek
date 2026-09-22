@@ -27,7 +27,7 @@ def _http_post(url: str, payload: dict, timeout: int = 30) -> dict | None:
     try:
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, method="POST", headers={
-            "User-Agent": "omniseek-mavis/0.1 (research retrieval)",
+            "User-Agent": "omniseek/0.1 (research retrieval)",
             "Content-Type": "application/json",
         })
         with urllib.request.urlopen(req, timeout=timeout) as resp:
