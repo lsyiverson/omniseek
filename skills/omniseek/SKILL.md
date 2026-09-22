@@ -14,7 +14,7 @@ description: |
   agent. The model still does the synthesis; this skill only fetches.
 ---
 
-# OmniSeek (Mavis Edition)
+# OmniSeek
 
 Multi-source retrieval toolbox distilled from `Battam1111/omniseek`. Same
 catalog-first design: every source ships as a standalone CLI script that takes

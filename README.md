@@ -18,79 +18,76 @@ score + dedupe, then drill into the top hits.
 | `funding` | nsf_awards, nih_reporter | — |
 | `walled` | zhihu (9222), xiaohongshu_search (9223), xiaohongshu_read (9223), smzdm_read (9226) | user-managed Chrome via CDP |
 
-See `references/catalog.md` for the full inventory with endpoints, qualifiers, and rate
-limits.
+See `skills/omniseek/references/catalog.md` for the full inventory with
+endpoints, qualifiers, and rate limits.
 
 ## Layout
 
 ```
 omniseek-skill/
-├── SKILL.md                  ← orchestrates the skill (loaded by Mavis)
-├── README.md                 ← you are here
+├── README.md                          ← you are here
 ├── .gitignore
-├── scripts/
-│   ├── _cdp.py               ← shared Chrome DevTools Protocol helper (walled scripts)
-│   ├── catalog.py            ← list every source, with --describe
-│   ├── normalize_doc.py      ← merge / dedup / score across sources
-│   ├── multi_search.py       ← fan-out wrapper for parallel source invocation
-│   ├── launch_browser.sh     ← mac/linux launcher for walled Chrome profiles
-│   ├── walled_health.py      ← probe all 4 CDP ports, report cookie state
-│   ├── <one .py per source>  ← 20 free-tier scripts
-│   └── walled/               ← login-gated scripts (use port above)
-│       ├── zhihu.py
-│       ├── xiaohongshu_search.py
-│       ├── xiaohongshu_read.py
-│       └── smzdm_read.py
-└── references/
-    ├── catalog.md            ← source inventory with details
-    ├── normalize.md          ← Document envelope contract
-    ├── patterns.md           ← sweep/zoom/structure workflow recipes
-    ├── walled.md             ← walled tier trust model + port conventions
-    └── sources-derived.md    ← upstream provenance + intentional omissions
+└── skills/
+    └── omniseek/
+        ├── SKILL.md                   ← orchestrates the skill (loaded by the agent)
+        ├── scripts/
+        │   ├── _cdp.py                ← shared Chrome DevTools Protocol helper (walled scripts)
+        │   ├── catalog.py             ← list every source, with --describe
+        │   ├── normalize_doc.py       ← merge / dedup / score across sources
+        │   ├── multi_search.py        ← fan-out wrapper for parallel source invocation
+        │   ├── launch_browser.sh      ← mac/linux launcher for walled Chrome profiles
+        │   ├── walled_health.py       ← probe all 4 CDP ports, report cookie state
+        │   ├── <one .py per source>   ← 20 free-tier scripts
+        │   └── walled/                ← login-gated scripts (use port above)
+        │       ├── zhihu.py
+        │       ├── xiaohongshu_search.py
+        │       ├── xiaohongshu_read.py
+        │       └── smzdm_read.py
+        └── references/
+            ├── catalog.md             ← source inventory with details
+            ├── normalize.md           ← Document envelope contract
+            ├── patterns.md            ← sweep/zoom/structure workflow recipes
+            ├── walled.md              ← walled tier trust model + port conventions
+            └── sources-derived.md     ← upstream provenance + intentional omissions
 ```
 
 ## Quick start
 
-**Install the skill** so Mavis can find it:
+**Install the skill** so your AI agent can find it (copy or symlink the
+`skills/omniseek/` directory into wherever your agent looks for skills, e.g.
+`~/.claude/skills/`, `~/.codex/skills/`, or an equivalent skills directory for
+your agent runtime):
 
 ```bash
 # Option A: direct copy
-cp -r . ~/.minimax/skills/omniseek/
+cp -r skills/omniseek /path/to/your/agent/skills/omniseek/
 
 # Option B: symlink (lets you edit here and see changes live)
-ln -sfn "$(pwd)" ~/.minimax/skills/omniseek
-
-# Verify
-node ~/.minimax/.builtin-skills/skill-creator/scripts/lint-skill.js \
-    ~/.minimax/skills/omniseek
+ln -sfn "$(pwd)/skills/omniseek" /path/to/your/agent/skills/omniseek
 ```
 
-All 8 lint checks should pass (SKILL.md, frontmatter, kebab-case name, trigger hint,
-no forbidden keys, line cap, no forbidden files, references resolve).
-
-> Note: the linter treats the directory it points at as the **installed** skill
-> (it checks that `name` matches the directory and that no `README.md` /
-> `.gitignore` leaks in). Run it against `~/.minimax/skills/omniseek/`, not against
-> this project directory.
+If your agent runtime ships a skill linter, run it against the installed
+directory to confirm SKILL.md frontmatter, naming, and references resolve
+correctly.
 
 **Browse sources:**
 
 ```bash
-python3 scripts/catalog.py                 # full inventory grouped by domain
-python3 scripts/catalog.py --domain papers
-python3 scripts/catalog.py --source smzdm --describe
+python3 skills/omniseek/scripts/catalog.py                 # full inventory grouped by domain
+python3 skills/omniseek/scripts/catalog.py --domain papers
+python3 skills/omniseek/scripts/catalog.py --source smzdm --describe
 ```
 
 **A typical sweep → zoom run:**
 
 ```bash
 # Sweep
-python3 scripts/multi_search.py "transformer attention" \
+python3 skills/omniseek/scripts/multi_search.py "transformer attention" \
     --sources arxiv,openalex,semantic_scholar --limit 5 \
     > /tmp/sweep.json
 
 # Zoom (merge + dedup + score)
-python3 scripts/normalize_doc.py /tmp/sweep.json \
+python3 skills/omniseek/scripts/normalize_doc.py /tmp/sweep.json \
     --query "transformer attention" --keep-score \
     | head -80
 ```
@@ -102,18 +99,18 @@ python3 scripts/normalize_doc.py /tmp/sweep.json \
 # 9222  shared (zhihu)
 # 9223  xiaohongshu (search + read)
 # 9226  smzdm (read-only — no smzdm login needed, just a real browser fingerprint)
-bash scripts/launch_browser.sh 9223 ~/.omniseek/chrome-9223 \
+bash skills/omniseek/scripts/launch_browser.sh 9223 ~/.omniseek/chrome-9223 \
     https://www.xiaohongshu.com
 #   ↑ log in by hand in the window that opens, then leave it running
 
 # Verify
-python3 scripts/walled_health.py
+python3 skills/omniseek/scripts/walled_health.py
 
 # Now drive it
-python3 scripts/walled/xiaohongshu_search.py "字节跳动 面经" --limit 5
+python3 skills/omniseek/scripts/walled/xiaohongshu_search.py "字节跳动 面经" --limit 5
 ```
 
-See `references/walled.md` for the full trust model, port map, and troubleshooting table.
+See `skills/omniseek/references/walled.md` for the full trust model, port map, and troubleshooting table.
 
 ## Document envelope contract
 
@@ -130,7 +127,7 @@ Every script returns a JSON array of Documents. Each Document has:
     "published_at": "2026-09-21T01:06:20Z",  # ISO-8601 UTC, or None
     "fetched_at": "2026-09-21T01:19:40Z",    # always set, ISO-8601 UTC
     "metadata": {
-        # free-form per source; see references/normalize.md for shapes
+        # free-form per source; see skills/omniseek/references/normalize.md for shapes
     }
 }
 ```
@@ -143,43 +140,37 @@ stderr. Empty result + exit code 0 is **not** an error — that's the contract.
 The standard pattern is:
 
 1. Pick the public endpoint and decide the kind (free / walled).
-2. For free sources: a new file `scripts/<name>.py` that:
+2. For free sources: a new file `skills/omniseek/scripts/<name>.py` that:
    - takes a query positional + `--limit` (matching `multi_search.py`'s fan-out)
    - parses the response into Documents with the envelope above
    - prints a JSON array
 3. For walled sources: same shape, but pulls the page through CDP via `_cdp.py`.
-4. Add the entry to `scripts/catalog.py` `CATALOG` dict.
-5. Add a row to `references/catalog.md`.
-6. Run `python3 scripts/lint-skill.js` and the catalog discovery.
+4. Add the entry to `skills/omniseek/scripts/catalog.py` `CATALOG` dict.
+5. Add a row to `skills/omniseek/references/catalog.md`.
+6. Run your agent runtime's skill linter (if any) and verify catalog discovery.
 
-See `references/patterns.md` for the broader sweep/zoom/structure recipes.
+See `skills/omniseek/references/patterns.md` for the broader sweep/zoom/structure recipes.
 
 ## Development
-
-Lint:
-
-```bash
-node ~/.minimax/.builtin-skills/skill-creator/scripts/lint-skill.js .
-```
 
 Smoke test one free-tier source:
 
 ```bash
-python3 scripts/arxiv.py "transformer attention" --limit 3 | python3 -m json.tool
+python3 skills/omniseek/scripts/arxiv.py "transformer attention" --limit 3 | python3 -m json.tool
 ```
 
 Smoke test walled (requires a running Chrome on the right port):
 
 ```bash
-python3 scripts/walled_health.py    # confirm the port is alive
-python3 scripts/walled/xiaohongshu_search.py "phd" --limit 3 | python3 -m json.tool
+python3 skills/omniseek/scripts/walled_health.py    # confirm the port is alive
+python3 skills/omniseek/scripts/walled/xiaohongshu_search.py "phd" --limit 3 | python3 -m json.tool
 ```
 
 ## Provenance
 
 Distilled from [`Battam1111/omniseek`](https://github.com/Battam1111/omniseek)
-(Apache-2.0). Each `scripts/*.py` corresponds to one source module in the upstream
-repo; `references/sources-derived.md` records the exact mapping so any port or fix
+(Apache-2.0). Each `skills/omniseek/scripts/*.py` corresponds to one source module in the upstream
+repo; `skills/omniseek/references/sources-derived.md` records the exact mapping so any port or fix
 is traceable.
 
 **Upstream has 218+ sources across 32 domains. This skill ships 20 free data

@@ -1,7 +1,7 @@
 # Catalog Reference — every source this skill ships
 
-This is the curated source inventory baked into the OmniSeek (Mavis Edition)
-skill. Each script distills one adapter from the upstream
+This is the curated source inventory baked into the OmniSeek skill. Each
+script distills one adapter from the upstream
 [`Battam1111/omniseek`](https://github.com/Battam1111/omniseek) repo into a
 standalone CLI. See `sources-derived.md` for the per-script provenance.
 
