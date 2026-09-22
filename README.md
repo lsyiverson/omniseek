@@ -1,5 +1,8 @@
 # omniseek — multi-source retrieval skill
 
+[![Install with npx skills](https://img.shields.io/badge/Install-npx%20skills%20add-blue)](https://skills.sh)
+`npx skills add lsyiverson/omniseek --skill omniseek -g -y`
+
 A skill that distills [Battam1111/omniseek](https://github.com/Battam1111/omniseek)
 (Apache-2.0) into a curated set of independent Python CLI scripts and a thin walled
 tier for login-gated platforms (Zhihu, Xiaohongshu, Smzdm-read). Designed for
@@ -53,10 +56,25 @@ omniseek-skill/
 
 ## Quick start
 
-**Install the skill** so your AI agent can find it (copy or symlink the
-`skills/omniseek/` directory into wherever your agent looks for skills, e.g.
-`~/.claude/skills/`, `~/.codex/skills/`, or an equivalent skills directory for
-your agent runtime):
+**Install with the `npx skills` CLI** (works across Claude Code, Cursor,
+Codex, OpenCode, Windsurf, and 40+ other agents):
+
+```bash
+# Install globally to every detected agent, no prompts
+npx skills add lsyiverson/omniseek --skill omniseek -g -y
+
+# Or just install to the current project
+npx skills add lsyiverson/omniseek --skill omniseek -y
+```
+
+Preview what's in the repo before installing:
+
+```bash
+npx skills add lsyiverson/omniseek --list
+```
+
+**Manual install** (if you'd rather copy or symlink by hand — e.g. you want
+to edit the skill locally and have changes reflected live):
 
 ```bash
 # Option A: direct copy
@@ -66,7 +84,9 @@ cp -r skills/omniseek /path/to/your/agent/skills/omniseek/
 ln -sfn "$(pwd)/skills/omniseek" /path/to/your/agent/skills/omniseek
 ```
 
-If your agent runtime ships a skill linter, run it against the installed
+Common agent skill directories: `~/.claude/skills/`, `~/.codex/skills/`,
+`~/.agents/skills/` (Cursor / OpenCode), `~/.windsurf/skills/`, etc. If
+your agent runtime ships a skill linter, run it against the installed
 directory to confirm SKILL.md frontmatter, naming, and references resolve
 correctly.
 
