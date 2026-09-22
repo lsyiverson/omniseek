@@ -1,0 +1,16 @@
+{
+  "skills": [
+    {
+      "name": "omniseek",
+      "description": "Multi-source deep retrieval across papers, code, community Q&A, news, jobs, and funding feeds. Use this skill when the user wants breadth AND structure that plain web search can't give — find a paper across arxiv/OpenAlex/Semantic Scholar, search GitHub issues + code, pull HackerNews/Reddit/StackOverflow threads, fetch job boards, query NSF/NIH grants, or aggregate RSS/blog feeds.",
+      "files": [
+        "skills/omniseek/SKILL.md",
+        "skills/omniseek/references/catalog.md",
+        "skills/omniseek/references/normalize.md",
+        "skills/omniseek/references/patterns.md",
+        "skills/omniseek/references/walled.md",
+        "skills/omniseek/references/sources-derived.md"
+      ]
+    }
+  ]
+}

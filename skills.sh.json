@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Multi-source retrieval",
+      "description": "One skill that fans out across papers, code, community Q&A, news, jobs, and funding feeds — breadth AND structure beyond what plain web search gives.",
+      "skills": ["omniseek"]
+    }
+  ]
+}
