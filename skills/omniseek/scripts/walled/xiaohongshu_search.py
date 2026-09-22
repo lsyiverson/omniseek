@@ -8,9 +8,15 @@ hydrate, and parses the rendered note cards.
 
 Prerequisites:
     pip install playwright beautifulsoup4
-    playwright install chromium
     scripts/launch_browser.sh 9223 ~/.omniseek/chrome-9223 https://www.xiaohongshu.com
         # log in by hand in the window
+
+Note: ``playwright install chromium`` is OPTIONAL. This script uses
+``connect_over_cdp`` (remote attach), not ``launch()`` (local spawn), so
+playwright only needs the Python package. If you already have Google
+Chrome / Chromium installed locally, just run ``launch_browser.sh`` and
+skip the ``playwright install chromium`` step. Only run that step if you
+have no local Chrome at all.
 
 Examples:
     python3 scripts/walled/xiaohongshu_search.py "PhD 申请 香港" --limit 10

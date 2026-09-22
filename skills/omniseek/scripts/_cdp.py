@@ -12,6 +12,16 @@ Trust model — match upstream omniseek:
   - Cookies live in your Chrome profile (~/.omniseek/chrome-<port>).
   - This script closes only the tab it opened — the browser stays up.
 
+Why ``playwright install chromium`` is OPTIONAL here:
+  - This skill uses ``connect_over_cdp`` (remote CDP attach), not
+    ``launch()`` (local browser spawn). Playwright only needs the
+    Python package; the bundled Chromium binary is NOT required.
+  - If you already have Google Chrome / Chromium / Chrome for Testing
+    installed on your machine, just point ``launch_browser.sh`` at it and
+    skip ``playwright install chromium`` entirely.
+  - Run ``playwright install chromium`` only if you have no local
+    Chrome/Chromium at all.
+
 Each script invocation is a separate process, so each gets its own
 ``sync_playwright()`` session. They all connect to the same remote
 Chrome. No shared Python state between scripts.
@@ -31,8 +41,9 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import shutil
 import sys
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +59,67 @@ DEFAULT_PORTS = {
     "douyin": 9225,
     "smzdm": 9226,
 }
+
+
+def find_local_chrome() -> Optional[str]:
+    """Return the path to a local Chrome / Chromium binary, or None.
+
+    Searches, in order:
+      1. ``$CHROME_BIN`` / ``$CHROMIUM_BIN`` (explicit user override)
+      2. macOS app bundles (Google Chrome, Chromium, Chrome for Testing)
+      3. ``$PATH`` for ``google-chrome``, ``google-chrome-stable``,
+         ``chromium``, ``chromium-browser``
+
+    This is the same lookup ``launch_browser.sh`` uses, mirrored in Python so
+    that the walled scripts' error messages can tell the user whether they
+    already have a browser (and just need to launch it) or whether they
+    truly need to install playwright's bundled chromium.
+    """
+    # 1. Explicit overrides
+    for var in ("CHROME_BIN", "CHROMIUM_BIN"):
+        candidate = os.environ.get(var, "").strip()
+        if candidate and os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+
+    # 2. macOS app bundles
+    macos_candidates = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    ]
+    for c in macos_candidates:
+        if os.path.isfile(c) and os.access(c, os.X_OK):
+            return c
+
+    # 3. Linux / WSL / anywhere on PATH
+    for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+        path = shutil.which(name)
+        if path:
+            return path
+
+    return None
+
+
+def install_hint() -> str:
+    """One-line human guidance for the user based on what's on their machine.
+
+    Returns the "next step" they should run, formatted so the caller can
+    append it directly to a RuntimeError or print on its own line.
+    """
+    local = find_local_chrome()
+    if local:
+        # User already has a Chrome. They just need to launch it.
+        return (
+            f"found local Chrome at {local} — skip 'playwright install chromium'; "
+            f"instead run: scripts/launch_browser.sh <port>"
+        )
+    return (
+        "no local Chrome/Chromium found — install one of: \n"
+        "    Google Chrome: https://www.google.com/chrome/\n"
+        "    Chromium:      brew install --cask chromium\n"
+        "  or, if you don't want a system-wide install, let playwright manage one: \n"
+        "    playwright install chromium"
+    )
 
 
 def _try_import_playwright():
@@ -97,7 +169,7 @@ def cdp_health(port: int) -> tuple[bool, str]:
     """
     sync_playwright = _try_import_playwright()
     if sync_playwright is None:
-        return False, "playwright not installed; run: pip install playwright && playwright install chromium"
+        return False, f"playwright Python package not installed; run: pip install playwright  ({install_hint()})"
 
     try:
         with sync_playwright() as p:
@@ -150,10 +222,7 @@ def cdp_call(
     sync_playwright = _try_import_playwright()
     if sync_playwright is None:
         raise RuntimeError(
-            "walled source needs playwright. Install with:\n"
-            "  pip install playwright\n"
-            "  playwright install chromium\n"
-            f"  scripts/launch_browser.sh {port}"
+            f"walled source needs the playwright Python package. {install_hint()}"
         )
 
     with sync_playwright() as p:

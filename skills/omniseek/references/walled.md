@@ -73,13 +73,32 @@ The walled tier needs the browser-automation engine. This is an **opt-in**
 install — without it, every free-tier script still works, and every walled
 script fails with a clear error.
 
+**Step 1a — always required** (the Python package):
+
 ```bash
 pip install playwright beautifulsoup4
+```
+
+**Step 1b — required ONLY if you have no local Chrome** (the browser
+binary):
+
+```bash
+# SKIP this if you already have Google Chrome / Chromium / Chrome for
+# Testing installed. The walled scripts use connect_over_cdp (remote
+# attach), not launch() (local spawn), so playwright only needs the
+# Python package — it never spawns its own browser when you launch
+# Chrome via scripts/launch_browser.sh.
+
+# Run this ONLY if you have no local Chrome / Chromium at all:
 playwright install chromium
 ```
 
-If you don't need the walled tier, skip this step. The other 22 scripts
+If you don't need the walled tier, skip step 1a too. The other 22 scripts
 in this skill work without it.
+
+The script auto-detects your situation: if a walled source complains
+about missing dependencies, its error message checks for local Chrome and
+tells you exactly which step to run next.
 
 ### 2. Know which port a source uses
 
@@ -185,7 +204,7 @@ Probes all four ports and prints one line per port:
 | `connected to port 9222, no context (login needed)` | Chrome up, no cookies — likely a fresh profile | Open the window and log in |
 | Wall script returns `[]` silently | Cookie expired, or site returned a login wall | Open Chrome, refresh zhihu.com, log in if redirected |
 | Wall script returns `[]` + captcha / 风控 | You hammered the site | Wait several hours; lower `--limit` |
-| `RuntimeError: walled source needs playwright` | Optional dep not installed | `pip install playwright && playwright install chromium` |
+| `RuntimeError: walled source needs playwright` | Playwright Python package missing | `pip install playwright` — and follow the auto-detected hint in the error (skip `playwright install chromium` if you already have Chrome locally) |
 | `RuntimeError: cannot connect to CDP port N` | Chrome not on that port | `scripts/launch_browser.sh N` |
 
 ---

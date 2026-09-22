@@ -8,8 +8,14 @@ selectors so a single page.content() + BeautifulSoup walk is enough.
 
 Prerequisites:
     pip install playwright beautifulsoup4
-    playwright install chromium
     scripts/launch_browser.sh 9222   # then log in to zhihu.com in the window
+
+Note: ``playwright install chromium`` is OPTIONAL. This script uses
+``connect_over_cdp`` (remote attach), not ``launch()`` (local spawn), so
+playwright only needs the Python package. If you already have Google
+Chrome / Chromium installed locally, just run ``launch_browser.sh`` and
+skip the ``playwright install chromium`` step. Only run that step if you
+have no local Chrome at all.
 
 Examples:
     python3 scripts/walled/zhihu.py "PhD 申请 流程" --limit 5
