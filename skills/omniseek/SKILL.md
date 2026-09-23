@@ -213,6 +213,25 @@ body in `content` plus `metadata.posts` (one entry per floor with author,
 time, uid). NGA throttles search per account: keep `--limit` small and don't
 loop the search.
 
+### Read a 小红书 note AND see its photos (walled)
+
+```bash
+scripts/launch_browser.sh 9223 ~/.omniseek/chrome-9223 https://www.xiaohongshu.com  # once
+python3 scripts/walled/xiaohongshu_search.py "露营装备" --limit 5
+URL=$(python3 scripts/walled/xiaohongshu_search.py "露营装备" --limit 1 \
+      | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['url'])")
+python3 scripts/walled/xiaohongshu_read.py "$URL" --max-comments 20 > /tmp/note.json
+python3 scripts/walled/xiaohongshu_view.py --note-url "$URL" --out-dir /tmp/xhs_imgs
+```
+
+Output: `xiaohongshu_read` gives you the note text/comments AND
+`metadata.images` (the note's own CDN photo URLs). Many 图文笔记 carry their
+real information in the pictures, not the caption — `xiaohongshu_view`
+downloads those URLs (with the `Referer` header the CDN requires) into
+`/tmp/xhs_imgs/*.jpg`; read those files with a file-viewing tool to actually
+see them. `xiaohongshu_view` also accepts raw URLs directly (`--file` or
+positional args) if you already have `metadata.images` from a saved run.
+
 ### Browse a source's full catalog
 
 ```bash
@@ -229,7 +248,7 @@ description + supported qualifiers.
 |---|---|---|
 | papers | arxiv, openalex, semantic_scholar, crossref, dblp, europe_pmc, zenodo | — |
 | code | github, hf_daily_papers | — |
-| community | hackernews, stackoverflow, reddit, bluesky | zhihu (port 9222), nga (port 9222, search + read), xiaohongshu (port 9223, search + read) |
+| community | hackernews, stackoverflow, reddit, bluesky | zhihu (port 9222), nga (port 9222, search + read), xiaohongshu (port 9223, search + read + image view) |
 | news | rss (generic aggregator), smzdm (中文消费原创 RSS), wayback | — |
 | jobs | mycareersfuture, remotive, layoffs_tracker | — |
 | funding | nsf_awards, nih_reporter, cordis_eu, ukri_gtr | — |

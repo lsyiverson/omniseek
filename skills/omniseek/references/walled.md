@@ -197,6 +197,15 @@ python3 scripts/walled/xiaohongshu_read.py "$URL" --max-comments 30
 # Or batch from a file (one URL per line)
 python3 scripts/walled/xiaohongshu_read.py --file /tmp/xhs_urls.txt --max-comments 50
 
+# SEE the note's own photos: xiaohongshu_read extracts CDN image URLs into
+# metadata.images. Download them (needs the right Referer header, NOT the
+# CDP browser — this step is a plain HTTP fetch):
+python3 scripts/walled/xiaohongshu_view.py --note-url "$URL" --out-dir /tmp/xhs_imgs
+# or, if you already have the URL list (e.g. from a saved xiaohongshu_read.py run):
+python3 -c "import json;d=json.load(open('/tmp/note.json'));print('\n'.join(d[0]['metadata']['images']))" \
+  | python3 scripts/walled/xiaohongshu_view.py --file /dev/stdin --out-dir /tmp/xhs_imgs
+# then read the downloaded files at /tmp/xhs_imgs/*.jpg with a file-viewing tool
+
 # Merge a walled source with a free source
 python3 scripts/arxiv.py "speculative decoding" --limit 5 > /tmp/papers.json
 python3 scripts/walled/zhihu.py "speculative decoding 综述" --limit 5 > /tmp/zh.json
@@ -262,8 +271,8 @@ Probes all four ports and prints one line per port:
   account and access to the content already. It does not help with
   credential stuffing, account farming, or bypassing rate limits.
 - **Not 14 sources out of the box.** This skill ships four walled
-  platforms / five scripts (`zhihu`, `nga`, `xiaohongshu_search` +
-  `xiaohongshu_read`, `smzdm_read`). The upstream omniseek ships
+  platforms / six scripts (`zhihu`, `nga`, `xiaohongshu_search` +
+  `xiaohongshu_read` + `xiaohongshu_view`, `smzdm_read`). The upstream omniseek ships
   14 (zhihu, yipinsanfendi, xiaohongshu, xiaohongshu_cn, douyin,
   discord_communities, youtube, wechat, feishu_jobs, bytedance_seed,
   douban_groups, zhihu_users, …). Each is ~80-800 lines of CSS-selector

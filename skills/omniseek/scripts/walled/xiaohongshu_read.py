@@ -21,6 +21,14 @@ up in merged search results), and the comment thread is parked under
 flat comment; sub-replies are also flat entries (no nesting) so downstream
 tools can join them without recursive walking.
 
+The note's carousel/cover images are extracted into ``metadata.images``
+(a list of CDN URLs, in on-page order, deduped, capped at ``--max-images``).
+These are the actual note pictures (xhscdn / rednotecdn hosts) — text alone
+often misses the point on a 图文笔记 whose "content" IS the photos. Pair
+with ``walled/xiaohongshu_view.py`` to download them (it sends the
+``Referer: https://www.xiaohongshu.com/`` header the CDN requires) so your
+own vision can look at them.
+
 Examples:
     # Read a single note (paste URL from xiaohongshu_search output)
     python3 scripts/walled/xiaohongshu_read.py \\
@@ -31,6 +39,9 @@ Examples:
 
     # Adjust depth: more comments per note, or a hard timeout
     python3 scripts/walled/xiaohongshu_read.py URL --max-comments 50 --timeout-ms 45000
+
+    # Then SEE the note's images (metadata.images) with your own vision:
+    python3 scripts/walled/xiaohongshu_view.py URL --out-dir /tmp/xhs_imgs
 
 Note on guest-readable URLs (verified late 2025 / 2026): only URLs that already
 carry an ``xsec_token`` render the real note body. A bare ``/explore/<id>`` will
@@ -82,6 +93,21 @@ _COMMENT_NODE_SELECTORS = (
 _COMMENT_AUTHOR_SEL = "a.name, .name, .author, .comment-user"
 _COMMENT_TEXT_SEL = ".note-text, .content, [class*='comment-text'], [class*='reply-text']"
 _COMMENT_LIKE_SEL = ".like-count, [class*='like-count'], .interaction-info .count"
+
+# Image extraction: the note carousel renders <img> tags inside the slider /
+# media container; XHS also stuffs a background-image on some skins. We cast a
+# wide net (any <img> whose src/data-src hits a known XHS image CDN host) rather
+# than pinning one container class, because the slider markup has drifted more
+# than once. False positives (avatar thumbnails etc.) are filtered by requiring
+# the URL to look like a real photo host, not a tiny avatar path.
+_IMAGE_CONTAINER_SEL = (
+    ".swiper-container, .slider-container, .note-slider, "
+    "[class*='note-slider'], [class*='swiper'], #noteContainer, .media-container"
+)
+_IMAGE_CDN_RE = re.compile(
+    r"(?:sns-webpic-qc|sns-img-qc|ci\.xhscdn|xhscdn\.com|rednotecdn)", re.I
+)
+_AVATAR_HINT_RE = re.compile(r"avatar|/user/|head_pic", re.I)
 
 
 def _now() -> str:
@@ -264,7 +290,40 @@ def _harvest_comments(html: str, cap: int) -> list[dict]:
     return comments
 
 
-def _flow(page, url: str, max_comments: int) -> dict:
+def _extract_images(soup: "BeautifulSoup", cap: int) -> list[str]:
+    """Collect the note's own photos (carousel + cover), deduped, on-page order.
+
+    We scan every <img> in the document (not just inside the slider container —
+    the slider markup drifts) and keep the ones whose src/data-src hits a known
+    XHS image CDN host and doesn't look like an avatar/user-head thumbnail.
+    ``srcset``/``data-src`` is preferred over a possibly-lazy ``src`` placeholder.
+    """
+    seen: set[str] = set()
+    urls: list[str] = []
+
+    for img in soup.find_all("img"):
+        candidate = (
+            img.get("data-src")
+            or img.get("src")
+            or (img.get("srcset") or "").split(",")[0].strip().split(" ")[0]
+        )
+        if not candidate or not candidate.startswith("http"):
+            continue
+        if not _IMAGE_CDN_RE.search(candidate):
+            continue
+        if _AVATAR_HINT_RE.search(candidate):
+            continue
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        urls.append(candidate)
+        if len(urls) >= cap:
+            break
+
+    return urls
+
+
+def _flow(page, url: str, max_comments: int, max_images: int) -> dict:
     """Navigate to one note URL, harvest body + comments. Raises if no body."""
     # Use the existing tab — the user already navigated to xiaohongshu.com
     page.goto(url, wait_until="domcontentloaded", timeout=20000)
@@ -289,10 +348,10 @@ def _flow(page, url: str, max_comments: int) -> dict:
         print(f"walled/xiaohongshu_read: scroll failed ({exc}); comments may be empty", file=sys.stderr)
 
     html = page.content()
-    return _parse_html(html, url, max_comments)
+    return _parse_html(html, url, max_comments, max_images)
 
 
-def _parse_html(html: str, url: str, max_comments: int) -> dict:
+def _parse_html(html: str, url: str, max_comments: int, max_images: int = 18) -> dict:
     if BeautifulSoup is None:
         raise RuntimeError("beautifulsoup4 not installed")
     soup = BeautifulSoup(html, "html.parser")
@@ -330,6 +389,7 @@ def _parse_html(html: str, url: str, max_comments: int) -> dict:
                 engagement["shares"] = count
 
     comments = _harvest_comments(html, cap=max_comments)
+    images = _extract_images(soup, cap=max_images)
 
     # Source ID: same logic as xiaohongshu_search — the 24-hex from the path
     parsed = urllib.parse.urlparse(url)
@@ -357,11 +417,13 @@ def _parse_html(html: str, url: str, max_comments: int) -> dict:
             "engagement": engagement,
             "comment_count_actual": len(comments),
             "comments": comments,
+            "images": images,
+            "image_count": len(images),
         },
     }
 
 
-def read_one(url: str, max_comments: int = 30) -> dict | None:
+def read_one(url: str, max_comments: int = 30, max_images: int = 18) -> dict | None:
     if not _check_xsec_token(url):
         print(
             f"walled/xiaohongshu_read: URL missing xsec_token (bare /explore/<id> renders empty): {url}",
@@ -377,7 +439,7 @@ def read_one(url: str, max_comments: int = 30) -> dict | None:
     try:
         return cdp_call(
             port=PORT,
-            callback=lambda page: _flow(page, url, max_comments),
+            callback=lambda page: _flow(page, url, max_comments, max_images),
             timeout_ms=45000,
         )
     except Exception as exc:
@@ -385,13 +447,13 @@ def read_one(url: str, max_comments: int = 30) -> dict | None:
         return None
 
 
-def read_many(urls: list[str], max_comments: int = 30) -> list[dict]:
+def read_many(urls: list[str], max_comments: int = 30, max_images: int = 18) -> list[dict]:
     out: list[dict] = []
     for url in urls:
         url = url.strip()
         if not url or url.startswith("#"):
             continue
-        doc = read_one(url, max_comments=max_comments)
+        doc = read_one(url, max_comments=max_comments, max_images=max_images)
         if doc is not None:
             out.append(doc)
     return out
@@ -404,6 +466,7 @@ def main() -> int:
     p.add_argument("urls", nargs="*", help="Note URLs (must carry xsec_token)")
     p.add_argument("--file", help="File with one URL per line")
     p.add_argument("--max-comments", type=int, default=30, help="Cap comments per note (default 30)")
+    p.add_argument("--max-images", type=int, default=18, help="Cap extracted image URLs per note (default 18)")
     p.add_argument("--timeout-ms", type=int, default=45000, help="Per-note CDP timeout (default 45s)")
     args = p.parse_args()
 
@@ -416,7 +479,7 @@ def main() -> int:
         print("No URLs given. Pass them as positional args or via --file.", file=sys.stderr)
         return 1
 
-    docs = read_many(urls, max_comments=args.max_comments)
+    docs = read_many(urls, max_comments=args.max_comments, max_images=args.max_images)
     json.dump(docs, sys.stdout, indent=2, ensure_ascii=False)
     print()
     return 0
