@@ -64,6 +64,15 @@ them in a single message with multiple `bash` tool calls. Each script takes
 the query, a `--limit`, and source-specific flags. Output is a JSON array on
 stdout.
 
+> **Exception — walled sources (`scripts/walled/*.py`).** These drive a
+> real logged-in browser on the user's behalf (see `references/walled.md`).
+> Do **not** fan these out in parallel and do not open multiple pages/tabs
+> at once. Call them **one at a time, serially**, with a small `--limit`,
+> and pause between calls. Parallel or rapid-fire requests are exactly what
+> trips a platform's risk-control / captcha ("操作频繁", 429). If a walled
+> script returns `[]` + a rate-limit/captcha signal, stop and back off —
+> don't retry immediately.
+
 ```bash
 # `<skill-dir>` is wherever this skill is installed for your agent runtime
 # (e.g. ~/.claude/skills/, ~/.codex/skills/, or the equivalent for your agent).

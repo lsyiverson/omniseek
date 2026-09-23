@@ -52,6 +52,11 @@ own account. You, the operator, accept responsibility for:
 - **Rate-limiting**: keep `--limit` small (5-20 results per call). Don't
   hammer the platform. If a script returns 429 / captcha / "操作频繁", back
   off for hours.
+- **Serial, not parallel**: never open multiple tabs/pages on a walled
+  source at once, and never fan out multiple `walled/*.py` calls in a
+  single parallel batch. Drive one page at a time — search, read, wait a
+  beat, then move to the next — to minimize the odds of tripping the
+  platform's risk-control.
 - **Account-specific rules**: each platform may forbid automation even of
   your own data. Read the platform's ToS in your jurisdiction before
   running a walled source against it.
