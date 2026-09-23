@@ -118,7 +118,7 @@ def _flow(page, query: str, limit: int) -> list[dict]:
     page.wait_for_selector(_CARD_SEL, timeout=15000)
     # A short scroll triggers any lazy hydration
     page.evaluate("window.scrollTo(0, 200)")
-    page.wait_for_timeout(800)
+    page.wait_for_timeout(1200)
     html = page.content()
     return _parse_html(html, query, limit)
 

@@ -344,7 +344,7 @@ def _flow(page, url: str, max_comments: int) -> dict:
         page.wait_for_selector(".m-contant article, #articleId, h1.item-name", timeout=15000)
     except Exception:
         pass
-    page.wait_for_timeout(800)  # let toolbar counters settle
+    page.wait_for_timeout(1200)  # let toolbar counters settle
     html = page.content()
 
     if _looks_like_captcha(html):

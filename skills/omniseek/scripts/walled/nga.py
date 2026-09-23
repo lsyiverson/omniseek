@@ -493,7 +493,7 @@ def _settle(page) -> None:
     for y in (300, 900, 1800):
         try:
             page.evaluate(f"window.scrollTo(0, {y})")
-            page.wait_for_timeout(400)
+            page.wait_for_timeout(900)
         except Exception:
             break
 
@@ -561,7 +561,7 @@ def _read_flow(page, tid: str, domain: str, max_posts: int, max_pages: int,
             all_posts.append(p)
         if len(all_posts) >= max_posts or len(page_posts) < 10:
             break  # short page = last page
-        page.wait_for_timeout(1200)  # be polite between paginated fetches
+        page.wait_for_timeout(2500)  # be polite between paginated fetches — NGA throttles hard
 
     if first_doc is None:
         return None

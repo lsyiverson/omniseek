@@ -223,7 +223,7 @@ def _scroll_to_load(page, max_rounds: int = 6) -> int:
         # No scroll container found; fall back to window scroll
         for _ in range(max_rounds):
             page.evaluate("window.scrollBy(0, window.innerHeight)")
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(1000)
     else:
         for _ in range(max_rounds):
             page.evaluate(
@@ -233,7 +233,7 @@ def _scroll_to_load(page, max_rounds: int = 6) -> int:
                 }}""",
                 selector,
             )
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(1000)
     return page.evaluate(
         """() => {
             let n = 0;
@@ -339,7 +339,7 @@ def _flow(page, url: str, max_comments: int, max_images: int) -> dict:
             "URL must come from xiaohongshu_search (which carries the token)"
         )
 
-    page.wait_for_timeout(800)  # let counters / sidebar hydrate
+    page.wait_for_timeout(1200)  # let counters / sidebar hydrate
 
     # Scroll comments area (best effort — if no comments, just no-op)
     try:

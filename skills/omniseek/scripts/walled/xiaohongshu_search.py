@@ -63,7 +63,7 @@ def _flow(page, query: str, limit: int) -> list[dict]:
     # Scroll to trigger lazy hydration
     for y in (200, 600, 1200, 1800):
         page.evaluate(f"window.scrollTo(0, {y})")
-        page.wait_for_timeout(400)
+        page.wait_for_timeout(900)
     return _parse_html(page.content(), query, limit)
 
 
