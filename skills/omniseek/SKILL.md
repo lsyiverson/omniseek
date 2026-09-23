@@ -159,11 +159,18 @@ script's docstring for the shape.
   straight to a real browser: `scripts/walled/smzdm_read.py <url>` (CDP
   port 9226) or a local browser tool. This is a fingerprint probe, not an
   auth wall — no login/account is needed to read the page.
-- **Walled / login-gated source (NGA, 知乎, 小红书)** — the script exits 0
-  with `[]` plus a stderr note like `login_required` or
-  `search_rate_limited`. Tell the user which Chrome port is involved and
-  what to do (`scripts/launch_browser.sh <port>`, then log in by hand);
-  don't fall back to blind `web_fetch` retries, and don't hammer the search.
+- **Walled / login-gated source (NGA, 知乎, 小红书)** — if the script fails
+  because no Chrome is bound to the expected CDP port (`ECONNREFUSED` /
+  "no browser (refused)"), don't just skip the source or ask the user to do
+  it — run `scripts/launch_browser.sh <port>` yourself in the background
+  (e.g. `bash scripts/launch_browser.sh 9222 &`), wait a few seconds for it
+  to come up, then retry the walled script. Only stop and tell the user if,
+  after the browser is up, the script still reports `login_required` (i.e.
+  the profile has no session cookies) — that part genuinely needs the user
+  to log in by hand once in the window you opened. If the script exits 0
+  with `[]` plus `search_rate_limited`, that's throttling, not a missing
+  browser — back off and don't hammer the search. Never fall back to blind
+  `web_fetch` retries for these sources.
 
 ## Examples
 
